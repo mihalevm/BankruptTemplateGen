@@ -9,48 +9,44 @@
 namespace app\models;
 
 use Yii;
-use yii\base\Model;
 use yii\httpclient\Client;
 
-class PcheckForm extends Model  {
+class PcheckForm extends ToolsForm {
     protected $db_conn;
 
     function __construct () {
         $this->db_conn = Yii::$app->db;
     }
-/*
-    private function addFsspItem ( $sid, $owner, $doc_num, $doc_id, $doc_edate, $summ, $psumm, $fssp_div, $fssp_ex ) {
 
-        $this->db_conn->createCommand("insert into bg_module_fssp (sid, owner, doc_num, doc_id, doc_edate, summ, psumm, fssp_div, fssp_ex) values (:sid, :owner, :doc_num, :doc_id, :doc_edate, :summ, :psumm, :fssp_div, :fssp_ex)",
-        [
-            ':sid'       => null,
-            ':owner'     => null,
-            ':doc_num'   => null,
-            ':doc_id'    => null,
-            ':doc_edate' => null,
-            ':summ'      => null,
-            ':psumm'     => null,
-            ':fssp_div'  => null,
-            ':fssp_ex'   => null
-        ])
-            ->bindValue(':sid',       $sid       )
-            ->bindValue(':owner',     $owner     )
-            ->bindValue(':doc_num',   $doc_num   )
-            ->bindValue(':doc_id',    $doc_id    )
-            ->bindValue(':doc_edate', $doc_edate )
-            ->bindValue(':summ',      $summ      )
-            ->bindValue(':psumm',     $psumm     )
-            ->bindValue(':fssp_div',  $fssp_div  )
-            ->bindValue(':fssp_ex',   $fssp_ex   )
+    private function addPassportValidate ($sid, $serial, $number) {
+        $sid = $this->getIDbySID($sid);
+
+        $this->db_conn->createCommand("delete from bg_module_passport_verifed where sid=:sid",
+            [
+                ':sid' => null
+            ])
+            ->bindValue(':sid', $sid )
             ->execute();
 
-        return 0;
+
+        $this->db_conn->createCommand("insert into bg_module_passport_verifed (sid, pserial, pnumber) values (:sid, :pserial, :pnumber)",
+            [
+                ':sid'     => null,
+                ':pserial' => null,
+                ':pnumber' => null,
+            ])
+            ->bindValue(':sid',     $sid    )
+            ->bindValue(':pserial', $serial )
+            ->bindValue(':pnumber', $number )
+            ->execute();
+
+        return true;
     }
 
-    private function getHttpClient ( $sid ) {
-        $host = 'is.fssprus.ru';
-        $http = 'https://'.$host;
-        $url  = $http.'/ajax_search';
+    private function getHttpClient ( $service, $method = 'post' ) {
+        $host = 'xn--b1afk4ade4e.xn--b1ab2a0a.xn--b1aew.xn--p1ai';
+        $http = 'http://'.$host;
+        $url  = $http.'/'.$service;
 
         $client = new Client();
 
@@ -58,203 +54,108 @@ class PcheckForm extends Model  {
             ->setOptions([
                 'timeout' => 2
             ])
-            ->setMethod('get')
+            ->setMethod($method)
             ->setUrl($url)
             ->setHeaders([
-                'Accept'           => 'application/json, text/javascript, /*; q=0.01',
+                'Accept'           => 'text/html,application/xhtml+xm…plication/xml;q=0.9,*/*;q=0.8',
                 'Accept-Encoding'  => 'gzip, deflate, br',
                 'Accept-Language'  => 'ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
-                'Cache-Control'    => 'no-cache',
+                'Cache-Control'    => 'max-age=0',
                 'Connection'       => 'keep-alive',
                 'Content-Type'     => 'application/x-www-form-urlencoded; charset=UTF-8',
                 'Host'             => $host,
-                'Pragma'           => 'no-cache',
                 'Referer'          => $http,
-                'User-Agent'       => 'runscope/0.1,Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:39.0) Gecko/20100101 Firefox/39.0',
-                'X-Requested-With' => 'XMLHttpRequest',
-                'Cookie'           => 'connect.sid='.$sid.';',
+                'User-Agent'       => 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0',
             ]);
 
         return $response;
     }
 
-    private function parseContent ($html, $session) {
+    public function getCaptcha() {
+        $captcha  = [];
+        $answer   = null;
+        $request = $this->getHttpClient( 'services/captcha.jpg', 'get');
+
+        try {
+            $answer = $request->send();
+        } catch (\Exception $e) {
+            $answer = null;
+        }
+
+        if (null != $answer  && $answer->getIsOk() ){
+            $session_cookies    = $answer->getCookies();
+            $captcha['captcha'] = "data:image/jpeg;base64,".base64_encode($answer->content);
+            $captcha['uid']     = $session_cookies->get('uid')->value;
+            $captcha['jid']     = $session_cookies->get('JSESSIONID')->value;
+            $captcha['error']   = 200;
+        } else {
+            $captcha['error'] = 500;
+        }
+
+        return $captcha;
+    }
+
+    private function parseContent ($html) {
         $dom = new \DOMDocument();
         $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'), LIBXML_NOERROR);
-        $data = [];
+        $data = "";
 
-        $all_tr = $dom->getElementsByTagName('tr');
+        $all_h4 = $dom->getElementsByTagName('h4');
 
-        foreach ($all_tr as $tr) {
-            $node = $tr->childNodes;
-
-            if ($node->length > 1 && $node->item(5)->nodeName == 'td'){
-                $matches = null;
-                preg_match('/^(.+):\s(\d+\.\d\d)/U', $node->item(5)->nodeValue, $matches);
-                if (strcasecmp('Исполнительский сбор', $matches[1]) !== 0){
-                    $this->addFsspItem(
-                         $session,
-                         $node->item(0)->nodeValue,
-                         $node->item(1)->nodeValue,
-                         $node->item(2)->nodeValue,
-                         $node->item(3)->nodeValue,
-                         $node->item(5)->nodeValue,
-                         floatval($matches[2]),
-                         $node->item(6)->nodeValue,
-                         $node->item(7)->nodeValue
-                    );
-
-                    $data["sum"] += floatval($matches[2]);
-                    $data["cnt"]++;
-                }
-            }
+        if ( $all_h4->length ) {
+            $data = $all_h4->item(0)->nodeValue;
         }
 
         return $data;
     }
 
-    public function Send_Grab( $last_name, $first_name, $patronymic, $date, $sid, $code, $session) {
-        $ts       = time();
-        $response = $this->getHttpClient($sid);
-        $answer   = null;
+    public function PassportValidate ($sid, $serial, $number, $captcha, $uid, $jid) {
+        $answer = null;
+        $check_result = [];
+        $check_result['validate'] = 0;
 
-        $response->setData([
-            'is' =>[
-                'ip_preg'    => '',
-                'variant'    => '1',
-                'last_name'  => $last_name,
-                'first_name' => $first_name,
-                'patronymic' => $patronymic,
-                'date'       => $date,
-                'drtr_name'  => '',
-                'address'    => '',
-                'ip_number'  => '',
-                'id_number'  => '',
-                'id_type'    => [],
-                'id_issuer'  => '',
-                'region_id'  => [-1],
-                'extended'   => 1,
-            ],
-            'code'     => $code,
-            'nocache'  => 1,
-            'system'   => 'ip',
-            'callback' => 'jQuery340016456929004994936_'.$ts,
-            '_'        => $ts,
+        $request = $this->getHttpClient('info-service.htm');
+
+        $request->setData([
+            'sid'           => '2000',
+            'form_name'     => 'form',
+            'DOC_SERIE'	    => $serial,
+            'DOC_NUMBER'    => $number,
+            'captcha-input' => $captcha
+        ]);
+
+        $request->setCookies([
+            ['name' => 'uid',        'value' => $uid],
+            ['name' => 'JSESSIONID', 'value' => $jid]
         ]);
 
         try {
-            $answer = $response->send();
+            $answer = $request->send();
         } catch (\Exception $e) {
             $answer = null;
         }
 
         if (null != $answer  && $answer->getIsOk() ){
-            if (!strstr($answer->content, "Неверно введен код") ) {
-                $matches = null;
-                preg_match('/\(\{\"data\":\"(.+)\",\"/', $answer->content, $matches);
-                $answer = null;
-                $answer['data'] = $matches[1];
-                $answer['data'] = str_replace('\r\n', '', $answer['data']);
-                $answer['data'] = str_replace('  ', '', $answer['data']);
-                $answer['data'] = str_replace('\"', '"', $answer['data']);
-                $answer['data'] = $this->parseContent($answer['data'], $session);
+            $check_result['data'] = $answer->content;
+            $check_result['data'] = str_replace('\r\n', '', $check_result['data']);
+            $check_result['data'] = str_replace('  ', '', $check_result['data']);
+            $check_result['data'] = str_replace('\"', '"', $check_result['data']);
 
-                $answer['error'] = 200;
+            $check_result['data'] = $this->parseContent($check_result['data']);
+
+            if (strlen($check_result['data']) > 0 && strlen(strstr($check_result['data'], "Cреди недействительных не значится")) > 0) {
+                $check_result['validate'] = 1;
+                $check_result['error']  = 200;
+                $this->addPassportValidate($sid, $serial, $number);
+            } elseif (strlen($check_result['data']) == 0) {
+                $check_result['error']  = 400;
             } else {
-                $answer = null;
-                $answer['data'] = \Yii::t('app','Captcha code error');
-                $answer['error'] = 400;
+                $check_result['error']  = 200;
             }
         } else {
-            $answer['data'] = \Yii::t('app','Service unavailable');
-            $answer['error'] = 500;
+            $check_result['error']  = 500;
         }
 
-        return $answer;
-    }
-
-    public function GetCaptcha() {
-        $captcha = [];
-
-        $response = $this->getHttpClient('');
-
-        $response->setData([
-            'is' =>[
-                'ip_preg'    => '',
-                'variant'    => '1',
-                'drtr_name'  => '',
-                'address'    => '',
-                'ip_number'  => '',
-                'id_number'  => '',
-                'id_type'    => [],
-                'id_issuer'  => '',
-                'region_id'  => [-1],
-                'extended'   => 1,
-            ],
-            'nocache' => 1,
-            'system'  => 'ip',
-        ]);
-
-        try {
-            $answer = $response->send();
-        } catch (\Exception $e) {
-            $answer = null;
-        }
-
-        if (null != $answer  && $answer->getIsOk() ){
-            $matches = null;
-            preg_match('/\"(data:image.+)\\\"\sid=\\\"capchaVisual/', $answer->content, $matches);
-            $captcha['captcha'] = $matches[1];
-            $captcha['cookies'] = $answer->getCookies();
-            $captcha['error']   = 200;
-
-            if ($captcha['cookies']->get('connect.sid')) {
-                $captcha['cookies'] = $captcha['cookies']->get('connect.sid')->value;
-            }
-        } else {
-            $captcha['captcha'] = '';
-            $captcha['cookies'] = '';
-            $captcha['error']   = 500;
-        }
-
-        return $captcha;
-    }
-*/
-    public function PassportValidate ($sid, $serial, $number) {
-        $response = [];
-        $response['error'] = 200;
-
-        $arr = ($this->db_conn->createCommand("SELECT count(*) as cnt FROM bg_module_passport_blist WHERE pnumber=:pnumber and pserial=:pserial",
-            [
-                'pnumber'=>'',
-                'pserial'=>''
-            ])
-            ->bindValue(':pnumber', $number)
-            ->bindValue(':pserial', $serial)
-            ->queryAll())[0];
-
-        $response['validate'] = $arr['cnt'] == 0;
-
-        if ($response['validate']) {
-            $this->db_conn->createCommand("delete from bg_module_passport_verifed where sid=:sid",
-                [
-                    ':sid' => null
-                ])
-                ->bindValue(':sid', $sid )
-                ->execute();
-
-            $this->db_conn->createCommand("insert into bg_module_passport_verifed (sid, pserial, pnumber) values (:sid, :pserial, :pnumber)",
-                [
-                    ':sid'     => null,
-                    ':pserial' => null,
-                    ':pnumber' => null,
-                ])
-                ->bindValue(':sid',     $sid    )
-                ->bindValue(':pserial', $serial )
-                ->bindValue(':pnumber', $number )
-                ->execute();
-        }
-
-        return $response;
+        return $check_result;
     }
 }

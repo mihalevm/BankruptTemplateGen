@@ -8,6 +8,9 @@
 
 namespace app\controllers;
 
+// upload unaviable passports
+// http://guvm.mvd.ru/upload/expired-passports/list_of_expired_passports.csv.bz2
+
 use Yii;
 use yii\web\Controller;
 use app\models\PcheckForm;
@@ -38,13 +41,27 @@ class PcheckController extends Controller {
         if (   null != $r->post('sid')
             && null != $r->post('s')
             && null != $r->post('n')
+            && null != $r->post('c')
+            && null != $r->post('uid')
+            && null != $r->post('jid')
         ){
             $res = $model->PassportValidate(
                 $r->post('sid'),
                 $r->post('s'),
-                $r->post('n')
+                $r->post('n'),
+                $r->post('c'),
+                $r->post('uid'),
+                $r->post('jid')
             );
         }
+
+        return $this->_sendJSONAnswer($res);
+    }
+
+    public function actionGetcaptcha (){
+        $res   = null;
+        $model = new PcheckForm();
+        $res   = $model->getCaptcha();
 
         return $this->_sendJSONAnswer($res);
     }

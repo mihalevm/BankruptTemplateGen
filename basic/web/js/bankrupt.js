@@ -35,29 +35,35 @@ let pcheck = function () {
 
             $("input[name=pserial]").parent().removeClass("has-error");
             $("input[name=pnumber]").parent().removeClass("has-error");
+            $("input[name=captcha_str]").parent().removeClass("has-error");
 
             if (!is_validate && (! $("input[name=pserial]").val() || $("input[name=pserial]").inputmask('unmaskedvalue').length != 4)){$("input[name=pserial]").parent().addClass("has-error"); is_validate = true;}
             if (!is_validate && (! $("input[name=pnumber]").val() || $("input[name=pnumber]").inputmask('unmaskedvalue').length != 6)){$("input[name=pnumber]").parent().addClass("has-error"); is_validate = true;}
+            if (!is_validate && (! $("input[name=captcha_str]").val() || $("input[name=captcha_str]").inputmask('unmaskedvalue').length != 6)){$("input[name=captcha_str]").parent().addClass("has-error"); is_validate = true;}
 
             if (!is_validate) {
                 $("[name=request]").prop("disabled", true);
                 $("[name=request]").addClass("disabled");
-
-                $("#log_result").fadeOut("slow", function () {
-//                    $("#log_result").empty();
-                });
+                $("#log_result").fadeOut("slow");
 
                 $.post(
-                    window.location.href+"/check", {sid:webtools.getSession(), s:$("input[name=pserial]").val(), n:$("input[name=pnumber]").val()},
+                    window.location.href+"/check", {sid:webtools.getSession(), s:$("input[name=pserial]").val(), n:$("input[name=pnumber]").val(),c:$("input[name=captcha_str]").val(), uid:$("#captcha").data("uid"), jid:$("#captcha").data("jid")},
                     function (answer) {
-                        if (parseInt(answer.error) === 200) {
-                            if (answer.validate) {
-                                $("#log_result").text("Паспорт действителен");
-                            }else{
-                                $("#log_result").text("Паспорт аннулирован");
+                        if (answer) {
+                            if (parseInt(answer.error) === 200) {
+                                if (answer.validate) {
+                                    $("#log_result").text(answer.data);
+                                } else {
+                                    $("#log_result").text(answer.data);
+                                }
                             }
-                        }
-                        if (parseInt(answer.error) === 500) {
+                            if (parseInt(answer.error) === 500) {
+                                $("#log_result").text("Сервис временно недоступен");
+                            }
+                            if (parseInt(answer.error) === 400) {
+                                $("#log_result").text("Не веррно введен код с картинки");
+                            }
+                        } else {
                             $("#log_result").text("Сервис временно недоступен");
                         }
                     }
@@ -68,8 +74,37 @@ let pcheck = function () {
                     $("[name=request]").prop("disabled", false);
                     $("[name=request]").removeClass("disabled");
                     $("#log_result").fadeIn("slow");
+                    pcheck.getcaptcha();
                 });
             }
+        },
+        getcaptcha : function () {
+            $("#captcha").attr("src", "");
+            $("#captcha").data("jid", "");
+            $("#captcha").data("uid", "");
+            $("[name=captcha_str]").val('');
+            $("[name=request]").prop("disabled", true);
+            $("[name=request]").addClass("disabled");
+
+            $.post(
+                window.location.href+"/getcaptcha", {},
+                function (answer) {
+                    if (parseInt(answer.error) === 200) {
+                        $("#captcha").attr("src", answer.captcha);
+                        $("#captcha").data("jid", answer.jid);
+                        $("#captcha").data("uid", answer.uid);
+                    }
+                    if (parseInt(answer.error) === 500) {
+                        $("#log_result").text("Сервис временно недоступен");
+                    }
+                }
+            ).fail(function(r) {
+                $("#log_result").text("Сервис временно недоступен");
+                console.log(r.responseText);
+            }).always(function () {
+                $("[name=request]").prop("disabled", false);
+                $("[name=request]").removeClass("disabled");
+            });
         }
     };
 }();
@@ -157,12 +192,6 @@ let grab = function () {
     };
 }();
 
-$(document).ready(function () {
-    if (window.location.pathname === '/grab'){
-        grab.getcapcha();
-    }
-});
-
 let userinit = function () {
     return {
         start : function () {
@@ -189,3 +218,12 @@ let userinit = function () {
         }
     };
 }();
+
+$(document).ready(function () {
+    if (window.location.pathname === '/grab'){
+        grab.getcapcha();
+    }
+    if (window.location.pathname === '/pcheck'){
+        pcheck.getcaptcha();
+    }
+});

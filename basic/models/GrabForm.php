@@ -9,24 +9,27 @@
 namespace app\models;
 
 use Yii;
-use yii\base\Model;
 use yii\httpclient\Client;
 
-class GrabForm extends Model  {
+class GrabForm extends ToolsForm {
     protected $db_conn;
 
     function __construct () {
         $this->db_conn = Yii::$app->db;
     }
 
-    private function addFsspItem ( $sid, $owner, $doc_num, $doc_id, $doc_edate, $summ, $psumm, $fssp_div, $fssp_ex ) {
-
+    private function cleanFsspItem ($sid) {
         $this->db_conn->createCommand("delete from bg_module_fssp where sid=:sid",
             [
                 ':sid' => null
             ])
             ->bindValue(':sid', $sid )
             ->execute();
+    }
+
+    private function addFsspItem ( $sid, $owner, $doc_num, $doc_id, $doc_edate, $summ, $psumm, $fssp_div, $fssp_ex ) {
+
+        $sid = $this->getIDbySID($sid);
 
         $this->db_conn->createCommand("insert into bg_module_fssp (sid, owner, doc_num, doc_id, doc_edate, summ, psumm, fssp_div, fssp_ex) values (:sid, :owner, :doc_num, :doc_id, :doc_edate, :summ, :psumm, :fssp_div, :fssp_ex)",
         [
@@ -91,6 +94,8 @@ class GrabForm extends Model  {
         $data = [];
 
         $all_tr = $dom->getElementsByTagName('tr');
+
+        $this->cleanFsspItem($session);
 
         foreach ($all_tr as $tr) {
             $node = $tr->childNodes;
