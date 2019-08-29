@@ -28,7 +28,7 @@ class DocsController extends Controller {
         $upload_result = '';
 
         if (!isset($_REQUEST['sid'])){
-            Yii::$app->response->redirect('user-init');
+            Yii::$app->response->redirect('/');
         }
 
         if (Yii::$app->request->isPost) {
