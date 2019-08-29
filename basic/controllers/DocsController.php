@@ -27,6 +27,9 @@ class DocsController extends Controller {
         $model = new DocsForm();
         $upload_result = '';
 
+        if (!isset($_REQUEST['sid'])){
+            Yii::$app->response->redirect('user-init');
+        }
 
         if (Yii::$app->request->isPost) {
             $model->pdfFile = UploadedFile::getInstance($model, 'pdfFile');
