@@ -26,11 +26,11 @@ class PcheckController extends Controller {
     }
 
     public function actionIndex(){
-        $model = new PcheckForm();
-        return $this->render('index',[
-            'model' => $model,
-            ]
-        );
+        if (!isset($_REQUEST['sid'])){
+            Yii::$app->response->redirect('/');
+        }
+
+        return $this->render('index');
     }
 
     public function actionCheck(){

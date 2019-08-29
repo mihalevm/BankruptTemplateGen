@@ -23,6 +23,10 @@ class GrabController extends Controller {
     }
 
     public function actionIndex(){
+        if (!isset($_REQUEST['sid'])){
+            Yii::$app->response->redirect('/');
+        }
+
         $model = new GrabForm();
         return $this->render('index',[
             'model' => $model,

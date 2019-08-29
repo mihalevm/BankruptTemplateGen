@@ -19,7 +19,9 @@ let webtools = function (){
             var redirect_table = {
                 "user-init":"grab",
                 "grab":"pcheck",
-                "pcheck":"user-init"
+                "pcheck":"egrul",
+                "egrul":"docs",
+                "docs":"user-init",
             };
 
             window.location.replace(window.location.origin+'/'+redirect_table[pos]);
@@ -218,6 +220,29 @@ let userinit = function () {
         }
     };
 }();
+
+let egrul = function () {
+    return {
+        check: function () {
+            $("#container").removeClass("has-error");
+            if ( $("input[name=inn]").val() ) {
+                $.post(
+                    window.location.href + "/check", {
+                        inn: $("input[name=inn]").val()
+                    },
+                    function (result) {
+                        console.log(result);
+                    }
+                ).fail(function (r) {
+                    console.log(r.responseText);
+                });
+            } else {
+                $("#container").addClass("has-error");
+            }
+        }
+    };
+}();
+
 
 $(document).ready(function () {
     if (window.location.pathname === '/grab'){

@@ -41,5 +41,8 @@ return [
     'File for upload' => 'Загружаемый документ',
     'Upload' => 'Загрузить',
     'File successfully uploaded' => 'Файл успешно загружен',
+    'EGRUL' => 'ЕГРЮЛ',
+    'EGRUL check' => 'Проверка по базе ЕГРЮЛ',
+    'INN' => 'ИНН',
     '' => '',
 ];
