@@ -21,6 +21,7 @@ class PcheckForm extends ToolsForm {
     private function addPassportValidate ($sid, $serial, $number) {
         $sid = $this->getIDbySID($sid);
 
+
         $this->db_conn->createCommand("delete from bg_module_passport_verifed where sid=:sid",
             [
                 ':sid' => null

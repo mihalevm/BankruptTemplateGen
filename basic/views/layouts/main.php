@@ -41,6 +41,7 @@ AppAsset::register($this);
             ['label' => \Yii::t('app','Home'),     'url' => ['/']],
             ['label' => \Yii::t('app','FSSP'),     'url' => ['/grab']],
             ['label' => \Yii::t('app','Passport'), 'url' => ['/pcheck']],
+            ['label' => \Yii::t('app','Documents'), 'url' => ['/docs']],
         ],
     ]);
     NavBar::end();

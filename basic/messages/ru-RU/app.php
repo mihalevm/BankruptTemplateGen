@@ -36,5 +36,10 @@ return [
     'Passport' => 'Паспорт',
     'Passport check' => 'Проверка паспорта',
     'Next' => 'Далее',
+    'Documents' => 'Документы',
+    'Upload documents' => 'Загрузка документов',
+    'File for upload' => 'Загружаемый документ',
+    'Upload' => 'Загрузить',
+    'File successfully uploaded' => 'Файл успешно загружен',
     '' => '',
 ];
