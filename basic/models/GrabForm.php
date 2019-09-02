@@ -28,9 +28,6 @@ class GrabForm extends ToolsForm {
     }
 
     private function addFsspItem ( $sid, $owner, $doc_num, $doc_id, $doc_edate, $summ, $psumm, $fssp_div, $fssp_ex ) {
-
-        $sid = $this->getIDbySID($sid);
-
         $this->db_conn->createCommand("insert into bg_module_fssp (sid, owner, doc_num, doc_id, doc_edate, summ, psumm, fssp_div, fssp_ex) values (:sid, :owner, :doc_num, :doc_id, :doc_edate, :summ, :psumm, :fssp_div, :fssp_ex)",
         [
             ':sid'       => null,
@@ -89,12 +86,12 @@ class GrabForm extends ToolsForm {
     }
 
     private function parseContent ($html, $session) {
+        $session = $this->getIDbySID($session);
         $dom = new \DOMDocument();
         $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'), LIBXML_NOERROR);
         $data = [];
 
         $all_tr = $dom->getElementsByTagName('tr');
-
         $this->cleanFsspItem($session);
 
         foreach ($all_tr as $tr) {
@@ -230,5 +227,25 @@ class GrabForm extends ToolsForm {
         }
 
         return $captcha;
+    }
+
+    public function getSavedData ($sid) {
+        $sid = $this->getIDbySID($sid);
+
+        $user_attr = ($this->db_conn->createCommand("select owner from bg_module_fssp where sid=:sid limit 1",[
+            ':sid' => null,
+        ])
+            ->bindValue(':sid', $sid)
+            ->queryAll())[0];
+
+        $user_summ = ($this->db_conn->createCommand("select sum(psumm) as summ from bg_module_fssp where sid=:sid",[
+            ':sid' => null,
+        ])
+            ->bindValue(':sid', $sid)
+            ->queryAll())[0];
+
+        $user_attr['owner'] = $user_summ['summ'].' '.$user_attr['owner'];
+
+        return preg_split('/\s/', $user_attr['owner']);
     }
 }

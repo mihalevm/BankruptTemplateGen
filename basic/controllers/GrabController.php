@@ -23,15 +23,43 @@ class GrabController extends Controller {
     }
 
     public function actionIndex(){
-        if (!isset($_REQUEST['sid'])){
-            Yii::$app->response->redirect('/');
+        $model = new GrabForm();
+        $sid = $_REQUEST['sid'];
+        $r = Yii::$app->request;
+
+        $params = [
+            'firstName'  => '',
+            'sureName'   => '',
+            'secondName' => '',
+            'birthDate'  => '',
+            'summ'       => '',
+            'model'      => $model
+        ];
+
+        if (null !== $r->get('sid')) {
+            $sid = $r->get('sid');
         }
 
-        $model = new GrabForm();
-        return $this->render('index',[
-            'model' => $model,
-            ]
-        );
+        if ( ! isset( $sid ) ){
+            Yii::$app->response->redirect('/');
+        } else {
+            $user_attr = $model->getSavedData($sid);
+
+            if (null !== $user_attr) {
+                $params['summ']       = round(floatval($user_attr[0]), 2);
+                $params['sureName']   = $user_attr[1];
+                $params['firstName']  = $user_attr[2];
+                $params['secondName'] = $user_attr[3];
+                $params['birthDate']  = $user_attr[4];
+                $model->_addSession($sid);
+            } else {
+                if (!$model->getIDbySID($sid)) {
+                    Yii::$app->response->redirect('/');
+                }
+            }
+        }
+
+        return $this->render('index', $params);
     }
 
     public function actionGetcapcha(){
@@ -52,7 +80,7 @@ class GrabController extends Controller {
             && null != $r->post('date')
             && null != $r->post('sid')
             && null != $r->post('code')
-            && null != $r->post('s')
+            && null != $_REQUEST['sid']
         ){
                         $res = $model->Send_Grab(
                             $r->post('last_name'),
@@ -61,7 +89,7 @@ class GrabController extends Controller {
                             $r->post('date'),
                             $r->post('sid'),
                             $r->post('code'),
-                            $r->post('s')
+                            $_REQUEST['sid']
                         );
         }
 

@@ -26,11 +26,34 @@ class PcheckController extends Controller {
     }
 
     public function actionIndex(){
-        if (!isset($_REQUEST['sid'])){
-            Yii::$app->response->redirect('/');
+        $model  = new PcheckForm();
+        $r = Yii::$app->request;
+        $sid = $_REQUEST['sid'];
+        $params = [
+            'pnumber'  => '',
+            'pserial' => '',
+        ];
+
+        if (null !== $r->get('sid')) {
+            $sid = $r->get('sid');
         }
 
-        return $this->render('index');
+        if ( ! isset( $sid ) ){
+            Yii::$app->response->redirect('/');
+        } else {
+            $params_value = $model->getSavedData($sid);
+            if ($params_value['pserial'] && $params_value['pnumber']) {
+                $params['pnumber'] = $params_value['pnumber'];
+                $params['pserial'] = $params_value['pserial'];
+                $model->_addSession($sid);
+            } else {
+                if (!$model->getIDbySID($sid)) {
+                    Yii::$app->response->redirect('/');
+                }
+            }
+        }
+
+        return $this->render('index', $params);
     }
 
     public function actionCheck(){
@@ -38,7 +61,7 @@ class PcheckController extends Controller {
         $res   = null;
         $model = new PcheckForm();
 
-        if (   null != $r->post('sid')
+        if (   isset($_REQUEST['sid'])
             && null != $r->post('s')
             && null != $r->post('n')
             && null != $r->post('c')
@@ -46,7 +69,7 @@ class PcheckController extends Controller {
             && null != $r->post('jid')
         ){
             $res = $model->PassportValidate(
-                $r->post('sid'),
+                $_REQUEST['sid'],
                 $r->post('s'),
                 $r->post('n'),
                 $r->post('c'),

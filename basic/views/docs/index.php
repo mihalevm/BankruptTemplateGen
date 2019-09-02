@@ -13,13 +13,17 @@ $this->title = \Yii::t('app','Upload documents');
             <?=$form->field($model, 'pdfFile')->fileInput()->label(false)?>
             <?=$form->field($model, 'typeFile')->hiddenInput(['value' => 'A'])->label(false);?>
         </div>
-
     </div>
     <div class="row">
         <div class="col-md-3">
             <?=$upload_result?>
         </div>
-        <div class="col-md-2 col-md-offset-1"><button><?=\Yii::t('app','Upload')?></button></div>
+        <div class="col-md-1 col-md-offset-1 captcha-refresh">
+            <button  class="btn btn-primary pull-right" ><?=\Yii::t('app','Upload')?></button>
+        </div>
+        <div class="col-md-1 captcha-refresh">
+            <button type="button" name="next" class="btn btn-primary pull-right" onclick="webtools.nextStep('docs');"><?=\Yii::t('app','Next')?></button>
+        </div>
     </div>
     <?php ActiveForm::end() ?>
 </div>

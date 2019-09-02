@@ -76,6 +76,42 @@ class EgrulForm extends ToolsForm  {
         return $response->send();
     }
 
+    private function addUserData ($inn, $json) {
+        $sid = $this->getIDbySID($_REQUEST['sid']);
+
+        $this->db_conn->createCommand("delete from bg_module_egrul where sid=:sid",
+            [
+                ':sid' => null
+            ])
+            ->bindValue(':sid',  $sid)
+            ->execute();
+
+        $this->db_conn->createCommand("insert into bg_module_egrul (sid, inn, rdata) values (:sid, :inn, :rdata)",
+            [
+                ':sid'   => null,
+                ':inn'   => null,
+                ':rdata' => null
+            ])
+            ->bindValue(':sid',   $sid  )
+            ->bindValue(':inn',   $inn  )
+            ->bindValue(':rdata', $json )
+            ->execute();
+
+        return 0;
+    }
+
+    public function getSavedData ($sid) {
+        $sid = $this->getIDbySID($sid);
+
+        $arr = ($this->db_conn->createCommand("select rdata from bg_module_egrul where sid=:sid",[
+            ':sid' => null,
+        ])
+            ->bindValue(':sid', $sid)
+            ->queryAll())[0];
+
+        return $arr['rdata'];
+    }
+
     public function EgrulRequest($key){
         $res = 0;
         $first_time_mark = round(microtime(true) * 1000);
@@ -88,10 +124,12 @@ class EgrulForm extends ToolsForm  {
                 $second_time_mark = round(microtime(true) * 1000);
                 $res = $this->_sendSecondRequest($res->t, $first_time_mark, $second_time_mark);
                 if ( $res->getIsOk() ) {
-                    $res = json_decode($res->content);
+                    $content = $res->content;
+                    $res = json_decode($content);
                     if (property_exists($res, 'rows')){
                         if (sizeof($res->rows)> 0){
                             $res = $res->rows[0];
+                            $this->addUserData($key, $content);
                         } else {
                             $res = 0;
                         }

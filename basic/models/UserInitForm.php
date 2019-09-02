@@ -49,4 +49,14 @@ class UserInitForm extends ToolsForm  {
 
         return $this->db_conn->getLastInsertID();
     }
+
+    public function getSession ($email) {
+        $savedSessions = $this->db_conn->createCommand("select rdate, sid from bg_module_userinit where email=:email and finished='N'",[
+            ':email'=>'',
+        ])
+            ->bindValue(':email', $email)
+            ->queryAll();
+
+        return $savedSessions;
+    }
 }

@@ -154,3 +154,21 @@ a.desc:after {
 img {
     white-space: nowrap;
 }
+
+#egrul_attr, #egrul_name {
+    line-height: 1;
+}
+
+.saved-session-holder {
+    display: none;
+}
+
+.saved-session {
+    line-height: 2;
+    cursor: pointer;
+    text-align: center;
+}
+
+.saved-session:hover{
+    background-color: rgba(62, 147, 220, 0.33);
+}

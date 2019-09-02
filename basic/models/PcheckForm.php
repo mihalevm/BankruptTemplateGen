@@ -159,4 +159,16 @@ class PcheckForm extends ToolsForm {
 
         return $check_result;
     }
+
+    public function getSavedData ($sid) {
+        $sid = $this->getIDbySID($sid);
+
+        $arr = ($this->db_conn->createCommand("select pserial, pnumber from bg_module_passport_verifed where sid=:sid",[
+            ':sid' => null,
+        ])
+            ->bindValue(':sid', $sid)
+            ->queryAll())[0];
+
+        return $arr;
+    }
 }

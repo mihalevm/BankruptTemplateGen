@@ -8,8 +8,8 @@
 
 namespace app\models;
 
-
 use yii\base\Model;
+use \yii\web\Cookie;
 
 class ToolsForm extends Model {
     protected $db_conn;
@@ -38,4 +38,16 @@ class ToolsForm extends Model {
         }
         return $randomString;
     }
+
+    public function _addSession($sid) {
+        $cookie = new Cookie([
+            'name'  => 'sid',
+            'value' => $sid
+        ]);
+
+        \Yii::$app->getResponse()->getCookies()->add($cookie);
+
+        return true;
+    }
+
 }

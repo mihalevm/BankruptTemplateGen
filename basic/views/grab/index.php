@@ -11,19 +11,19 @@ $this->title = \Yii::t('app','Check FSSP');
     <div class="row">
         <div class="col-md-2">Фамилия</div>
         <div class="col-md-4">
-            <input name="last_name" type="text" class="form-control" placeholder="<?=\Yii::t('app','Surname')?>" autofocus />
+            <input name="last_name" value="<?=$sureName?>" type="text" class="form-control" placeholder="<?=\Yii::t('app','Surname')?>" autofocus />
         </div>
     </div>
     <div class="row">
         <div class="col-md-2">Имя</div>
         <div class="col-md-4">
-            <input name="first_name" class="form-control" type="text" placeholder="<?=\Yii::t('app','Name')?>"/>
+            <input name="first_name" value="<?=$firstName?>" class="form-control" type="text" placeholder="<?=\Yii::t('app','Name')?>"/>
         </div>
     </div>
     <div class="row">
         <div class="col-md-2">Отчество</div>
         <div class="col-md-4">
-            <input class="form-control" name="patronymic" type="text" placeholder="<?=\Yii::t('app','Patronymic')?>"/>
+            <input class="form-control" value="<?=$secondName?>" name="patronymic" type="text" placeholder="<?=\Yii::t('app','Patronymic')?>" data-bdate="<?=$birthDate?>" data-summ="<?=$summ?>"/>
         </div>
     </div>
     <div class="row">

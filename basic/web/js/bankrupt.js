@@ -15,7 +15,7 @@ let webtools = function (){
             var _nparts = _n.split('.');
             return _nparts[0]+' руб. '+_nparts[1]+' коп.';
         },
-        nextStep :function (pos) {
+        nextStep :function (pos, sid = null) {
             var redirect_table = {
                 "user-init":"grab",
                 "grab":"pcheck",
@@ -24,7 +24,13 @@ let webtools = function (){
                 "docs":"user-init",
             };
 
-            window.location.replace(window.location.origin+'/'+redirect_table[pos]);
+            var url = window.location.origin+'/'+redirect_table[pos];
+
+            if (sid) {
+                url = url+'?sid='+sid;
+            }
+
+            window.location.replace(url);
         }
     };
 
@@ -49,7 +55,7 @@ let pcheck = function () {
                 $("#log_result").fadeOut("slow");
 
                 $.post(
-                    window.location.href+"/check", {sid:webtools.getSession(), s:$("input[name=pserial]").val(), n:$("input[name=pnumber]").val(),c:$("input[name=captcha_str]").val(), uid:$("#captcha").data("uid"), jid:$("#captcha").data("jid")},
+                    window.location.origin+window.location.pathname+"/check", {sid:webtools.getSession(), s:$("input[name=pserial]").val(), n:$("input[name=pnumber]").val(),c:$("input[name=captcha_str]").val(), uid:$("#captcha").data("uid"), jid:$("#captcha").data("jid")},
                     function (answer) {
                         if (answer) {
                             if (parseInt(answer.error) === 200) {
@@ -89,7 +95,7 @@ let pcheck = function () {
             $("[name=request]").addClass("disabled");
 
             $.post(
-                window.location.href+"/getcaptcha", {},
+                window.location.origin+window.location.pathname+"/getcaptcha", {},
                 function (answer) {
                     if (parseInt(answer.error) === 200) {
                         $("#captcha").attr("src", answer.captcha);
@@ -121,7 +127,7 @@ let grab = function () {
             $("[name=captcha_str]").val('');
 
             $.post(
-                window.location.href+"/getcapcha", {},
+                window.location.origin+window.location.pathname+"/getcapcha", {},
                 function (answer) {
                     if (parseInt(answer.error) === 200) {
                         $("#captcha").attr("src", answer.captcha);
@@ -154,7 +160,7 @@ let grab = function () {
 
             if (!is_validate) {
                 $.post(
-                    window.location.href + "/sendgrab",
+                    window.location.origin+window.location.pathname + "/sendgrab",
                     {
                         last_name: $("input[name=last_name]").val(),
                         first_name: $("input[name=first_name]").val(),
@@ -195,13 +201,15 @@ let grab = function () {
 }();
 
 let userinit = function () {
+    var timerId = null;
+
     return {
         start : function () {
             var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
             $("#container").removeClass("has-error");
             if ( regex.test($("input[name=email]").val()) ) {
                 $.post(
-                    window.location.href + "/user-init/start", {
+                    window.location.origin + "/user-init/start", {
                         email: $("input[name=email]").val(),
                         sid: $("[name=email]").data("sid")
                     },
@@ -217,7 +225,37 @@ let userinit = function () {
             } else {
                 $("#container").addClass("has-error");
             }
-        }
+        },
+        search : function () {
+            if (timerId) {clearTimeout(timerId);}
+            $(".saved-session-holder").fadeOut("slow");
+            var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+            if ( regex.test($("input[name=email]").val()) ) {
+                timerId = setTimeout(function () {
+                    $.post(
+                        window.location.origin + "/user-init/getsession", {
+                            email: $("input[name=email]").val(),
+                        },
+                        function (sessions) {
+                            $("#saved_session").empty();
+                            if (sessions.length > 0) {
+                                $(sessions).each(function (i, o) {
+                                    $("#saved_session").append("<div class='saved-session' data-sid='" + o.sid + "'>" + o.rdate + "</div>");
+                                    if (i === sessions.length-1){
+                                        $(".saved-session-holder").fadeIn("slow");
+                                        $(".saved-session").click(function () {
+                                            webtools.nextStep('user-init', $(this).data("sid"));
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    ).fail(function (r) {
+                        console.log(r.responseText);
+                    });
+                }, 1000);
+            }
+        },
     };
 }();
 
@@ -225,13 +263,16 @@ let egrul = function () {
     return {
         check: function () {
             $("#container").removeClass("has-error");
-            if ( $("input[name=inn]").val() ) {
+            if ( $("input[name=inn]").inputmask('unmaskedvalue') ) {
                 $.post(
-                    window.location.href + "/check", {
-                        inn: $("input[name=inn]").val()
+                    window.location.origin+window.location.pathname + "/check", {
+                        inn: $("input[name=inn]").inputmask('unmaskedvalue')
                     },
                     function (result) {
-                        console.log(result);
+                        if (result.hasOwnProperty("n")){
+                            $("#egrul_name").text(result.n);
+                            $("#egrul_attr").text("ОГРНИП: "+result.o+" , ИНН: "+result.i+" , Дата присвоения ОГРНИП: "+result.r);
+                        }
                     }
                 ).fail(function (r) {
                     console.log(r.responseText);
@@ -247,8 +288,18 @@ let egrul = function () {
 $(document).ready(function () {
     if (window.location.pathname === '/grab'){
         grab.getcapcha();
+        if ($("input[name=patronymic]").data('summ') && $("input[name=patronymic]").data('bdate')){
+            $("input[name=date]").val($("input[name=patronymic]").data('bdate'));
+            $("#log_result").append("Найдены задолжноси на общую сумму:" + $("input[name=patronymic]").data('summ'));
+            $("#log_result").fadeIn("slow");
+        }
     }
+
     if (window.location.pathname === '/pcheck'){
         pcheck.getcaptcha();
+        if ($("input[name=pserial]").val() && $("input[name=pnumber]").val()){
+            $("#log_result").text("По Вашему запросу о действительности паспорта РФ "+$("input[name=pserial]").inputmask("unmaskedvalue")+" № "+$("input[name=pnumber]").inputmask("unmaskedvalue")+" получен ответ о том, что данный паспорт «Cреди недействительных не значится».");
+            $("#log_result").fadeIn("slow");
+        }
     }
 });

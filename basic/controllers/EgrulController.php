@@ -23,12 +23,38 @@ class EgrulController extends Controller {
     }
 
     public function actionIndex(){
+        $model  = new EgrulForm();
+        $r = Yii::$app->request;
+        $sid = $_REQUEST['sid'];
+        $params = [
+            'inn'  => '',
+            'name' => '',
+            'attr' => ''
+        ];
 
-        if (!isset($_REQUEST['sid'])){
-            Yii::$app->response->redirect('/');
+        if (null !== $r->get('sid')) {
+            $sid = $r->get('sid');
         }
 
-        return $this->render('index');
+        if ( ! isset( $sid ) ){
+            Yii::$app->response->redirect('/');
+        } else {
+            $json_obj = json_decode($model->getSavedData($sid));
+
+            if (null !== $json_obj) {
+                $json_obj = $json_obj->rows[0];
+                $params['inn'] = $json_obj->i;
+                $params['name'] = $json_obj->n;
+                $params['attr'] = \Yii::t('app','OGRNIP').": " . $json_obj->o . " , ".\Yii::t('app','INN').": " . $json_obj->i . " , ".\Yii::t('app','Date OGRNIP').": " . $json_obj->r;
+                $model->_addSession($sid);
+            } else {
+                if (!$model->getIDbySID($sid)) {
+                    Yii::$app->response->redirect('/');
+                }
+            }
+        }
+
+        return $this->render('index', $params);
     }
 
     public function actionCheck(){

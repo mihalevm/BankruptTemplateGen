@@ -47,4 +47,16 @@ class UserInitController extends Controller {
         return $this->_sendJSONAnswer($result);
     }
 
+    public function actionGetsession (){
+        $model  = new UserInitForm();
+        $r      = Yii::$app->request;
+        $result = [];
+
+        if ( null !== $r->post('email') ) {
+            $result = $model->getSession($r->post('email'));
+        }
+
+        return $this->_sendJSONAnswer($result);
+    }
+
 }

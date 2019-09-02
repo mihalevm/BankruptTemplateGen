@@ -10,13 +10,13 @@ $this->title = \Yii::t('app','Passport check');
     <div class="row">
         <div class="col-md-2"><?=\Yii::t('app','Passport serial')?></div>
         <div class="col-md-4">
-            <?=MaskedInput::widget(['name' => 'pserial','mask' => '9999', 'options'=>['autofocus'=>'', 'class'=>'form-control', 'placeholder'=>\Yii::t('app','Serial')]]);?>
+            <?=MaskedInput::widget(['value'=>$pserial, 'name' => 'pserial','mask' => '9999', 'options'=>['autofocus'=>'', 'class'=>'form-control', 'placeholder'=>\Yii::t('app','Serial')]]);?>
         </div>
     </div>
     <div class="row">
         <div class="col-md-2"><?=\Yii::t('app','Passport number')?></div>
         <div class="col-md-4">
-            <?=MaskedInput::widget(['name' => 'pnumber','mask' => '999999', 'options'=>['class'=>'form-control', 'placeholder'=>\Yii::t('app','Number')]]);?>
+            <?=MaskedInput::widget(['value'=>$pnumber, 'name' => 'pnumber','mask' => '999999', 'options'=>['class'=>'form-control', 'placeholder'=>\Yii::t('app','Number')]]);?>
         </div>
     </div>
     <div class="row">
