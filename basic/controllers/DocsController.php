@@ -25,25 +25,35 @@ class DocsController extends Controller {
 
     public function actionIndex(){
         $model = new DocsForm();
-        $upload_result = '';
+        $r = Yii::$app->request;
+        $sid = $_REQUEST['sid'];
 
-        if (!isset($_REQUEST['sid'])){
-            Yii::$app->response->redirect('/');
+        $params = [
+            'model'  => $model,
+            'upload_result' => [],
+        ];
+
+        if (null !== $r->get('sid')) {
+            $sid = $r->get('sid');
         }
 
-        if (Yii::$app->request->isPost) {
-            $model->pdfFile = UploadedFile::getInstance($model, 'pdfFile');
-            $p = Yii::$app->request->post('DocsForm');
+        if ( ! isset( $sid ) ){
+            Yii::$app->response->redirect('/');
+        } else {
+            $uploaded_files = $model->getSavedData($sid);
 
-            if ($model->upload($_REQUEST['sid'],$p['typeFile'])) {
-                $upload_result =  \Yii::t('app','File successfully uploaded');;
+            $params ['upload_result'] = $uploaded_files;
+
+            if (Yii::$app->request->isPost) {
+                $model->pdfFile = UploadedFile::getInstance($model, 'pdfFile');
+                $p = Yii::$app->request->post('DocsForm');
+
+                if ($model->upload($_REQUEST['sid'],$p['typeFile'])) {
+                    $params['upload_result'] = \Yii::t('app','File successfully uploaded');;
+                }
             }
         }
 
-        return $this->render('index',[
-            'model' => $model,
-            'upload_result' => $upload_result,
-            ]
-        );
+        return $this->render('index', $params);
     }
 }

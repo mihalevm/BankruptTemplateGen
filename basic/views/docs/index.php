@@ -15,10 +15,12 @@ $this->title = \Yii::t('app','Upload documents');
         </div>
     </div>
     <div class="row">
-        <div class="col-md-3">
-            <?=$upload_result?>
+        <div class="col-md-5" style="line-height: 1;">
+            <? if ($upload_result['A']) {echo 'Файл уже загружен: '.$upload_result['A'];}?>
         </div>
-        <div class="col-md-1 col-md-offset-1 captcha-refresh">
+    </div>
+    <div class="row">
+        <div class="col-md-1 col-md-offset-4 captcha-refresh">
             <button  class="btn btn-primary pull-right" ><?=\Yii::t('app','Upload')?></button>
         </div>
         <div class="col-md-1 captcha-refresh">

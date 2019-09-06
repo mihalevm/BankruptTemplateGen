@@ -271,7 +271,13 @@ let egrul = function () {
                     function (result) {
                         if (result.hasOwnProperty("n")){
                             $("#egrul_name").text(result.n);
-                            $("#egrul_attr").text("ОГРНИП: "+result.o+" , ИНН: "+result.i+" , Дата присвоения ОГРНИП: "+result.r);
+                            var close_date = "";
+
+                            if (result.hasOwnProperty("e")){
+                                close_date = " Дата прекращения деятельности: "+result.e;
+                            }
+
+                            $("#egrul_attr").text("ОГРНИП: "+result.o+" , ИНН: "+result.i+" , Дата присвоения ОГРНИП: "+result.r+close_date);
                         }
                     }
                 ).fail(function (r) {

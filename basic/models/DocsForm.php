@@ -92,4 +92,23 @@ class DocsForm extends ToolsForm {
             return false;
         }
     }
+    public function getSavedData ($sid) {
+        $sid = $this->getIDbySID($sid);
+        $result = [];
+
+        $uploaded_file = $this->db_conn->createCommand("select ftype, ext_name from bg_module_docs where sid=:sid",[
+            ':sid' => null,
+        ])
+            ->bindValue(':sid', $sid)
+            ->queryAll();
+
+        if (count($uploaded_file) > 0) {
+            foreach ($uploaded_file as $file_item) {
+                $result[$file_item['ftype']] = $file_item['ext_name'];
+            }
+        }
+
+        return $result;
+
+    }
 }
