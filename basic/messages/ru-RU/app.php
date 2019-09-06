@@ -46,5 +46,7 @@ return [
     'INN' => 'ИНН',
     'OGRNIP' => 'ОГРНИП',
     'Date OGRNIP' => 'Дата присвоения ОГРНИП',
+    'File already uploaded: ' => 'Файл уже загружен: ',
+    'Date close' => 'Дата закрытия',
     '' => '',
 ];

@@ -16,7 +16,7 @@ $this->title = \Yii::t('app','Upload documents');
     </div>
     <div class="row">
         <div class="col-md-5" style="line-height: 1;">
-            <? if ($upload_result['A']) {echo 'Файл уже загружен: '.$upload_result['A'];}?>
+            <? if ($upload_result['A']) {echo \Yii::t('app','File already uploaded: ').$upload_result['A'];}?>
         </div>
     </div>
     <div class="row">

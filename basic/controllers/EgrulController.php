@@ -46,6 +46,9 @@ class EgrulController extends Controller {
                 $params['inn'] = $json_obj->i;
                 $params['name'] = $json_obj->n;
                 $params['attr'] = \Yii::t('app','OGRNIP').": " . $json_obj->o . " , ".\Yii::t('app','INN').": " . $json_obj->i . " , ".\Yii::t('app','Date OGRNIP').": " . $json_obj->r;
+                if (property_exists($json_obj, 'e')) {
+                    $params['attr'] = $params['attr'].' '.\Yii::t('app','Date close').": " . $json_obj->e;
+                }
                 $model->_addSession($sid);
             } else {
                 if (!$model->getIDbySID($sid)) {
