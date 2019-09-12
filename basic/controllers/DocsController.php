@@ -30,7 +30,9 @@ class DocsController extends Controller {
 
         $params = [
             'model'  => $model,
-            'upload_result' => [],
+            'upload_result' => '',
+            'file_exist' => [],
+            'fileDesc' => '',
         ];
 
         if (null !== $r->get('sid')) {
@@ -41,15 +43,14 @@ class DocsController extends Controller {
             Yii::$app->response->redirect('/');
         } else {
             $uploaded_files = $model->getSavedData($sid);
-
-            $params ['upload_result'] = $uploaded_files;
+            $params['file_exist'] = $uploaded_files;
 
             if (Yii::$app->request->isPost) {
                 $model->pdfFile = UploadedFile::getInstance($model, 'pdfFile');
                 $p = Yii::$app->request->post('DocsForm');
 
-                if ($model->upload($_REQUEST['sid'],$p['typeFile'])) {
-                    $params['upload_result'] = \Yii::t('app','File successfully uploaded');;
+                if ($model->upload($_REQUEST['sid'],$p['typeFile'], $p['fDesc'])) {
+                    $params['upload_result'] = \Yii::t('app','File successfully uploaded');
                 }
             }
         }

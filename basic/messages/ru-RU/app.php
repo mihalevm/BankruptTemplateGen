@@ -48,5 +48,6 @@ return [
     'Date OGRNIP' => 'Дата присвоения ОГРНИП',
     'File already uploaded: ' => 'Файл уже загружен: ',
     'Date close' => 'Дата закрытия',
+    'Enter file description' => 'Введите описание файла',
     '' => '',
 ];

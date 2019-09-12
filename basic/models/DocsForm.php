@@ -13,6 +13,7 @@ use Yii;
 class DocsForm extends ToolsForm {
     protected $db_conn;
     public    $pdfFile;
+    public    $fDesc;
     private   $base_dir = 'uploads/';
 
     public function rules() {
@@ -43,7 +44,7 @@ class DocsForm extends ToolsForm {
         return true;
     }
 
-    private function addDocument ($sid, $ftype, $ext_name) {
+    private function addDocument ($sid, $ftype, $fdesc, $ext_name) {
         $this->deleteOldFile($sid, $ftype);
         $sid = $this->getIDbySID($sid);
         $int_name = $this->generateRandomString(40);
@@ -57,15 +58,17 @@ class DocsForm extends ToolsForm {
             ->bindValue(':ftype', $ftype )
             ->execute();
 
-        $this->db_conn->createCommand("insert into bg_module_docs (sid, ftype, ext_name, int_name) values (:sid, :ftype, :ext_name, :int_name)",
+        $this->db_conn->createCommand("insert into bg_module_docs (sid, ftype, ext_name, int_name, fdesc) values (:sid, :ftype, :ext_name, :int_name, :fdesc)",
             [
                 ':sid'      => null,
                 ':ftype'    => null,
                 ':ext_name' => null,
                 ':int_name' => null,
+                ':fdesc'    => null,
             ])
             ->bindValue(':sid',      $sid      )
             ->bindValue(':ftype',    $ftype    )
+            ->bindValue(':fdesc',    $fdesc    )
             ->bindValue(':ext_name', $ext_name )
             ->bindValue(':int_name', $int_name.'.'.$this->pdfFile->extension )
             ->execute();
@@ -73,10 +76,10 @@ class DocsForm extends ToolsForm {
         return $int_name;
     }
 
-    public function upload($sid, $fileType) {
+    public function upload($sid, $fileType, $fileDesc) {
 
         if ($this->validate()) {
-            $internal_file_name = $this->addDocument($sid, $fileType, $this->pdfFile->baseName.'.'.$this->pdfFile->extension);
+            $internal_file_name = $this->addDocument($sid, $fileType, $fileDesc, $this->pdfFile->baseName.'.'.$this->pdfFile->extension);
 
             if (!is_dir($this->base_dir.$sid)){
                 mkdir($this->base_dir.$sid);
@@ -96,7 +99,7 @@ class DocsForm extends ToolsForm {
         $sid = $this->getIDbySID($sid);
         $result = [];
 
-        $uploaded_file = $this->db_conn->createCommand("select ftype, ext_name from bg_module_docs where sid=:sid",[
+        $uploaded_file = $this->db_conn->createCommand("select ftype, ext_name, fdesc from bg_module_docs where sid=:sid",[
             ':sid' => null,
         ])
             ->bindValue(':sid', $sid)
@@ -104,7 +107,8 @@ class DocsForm extends ToolsForm {
 
         if (count($uploaded_file) > 0) {
             foreach ($uploaded_file as $file_item) {
-                $result[$file_item['ftype']] = $file_item['ext_name'];
+                $result[$file_item['ftype']]['ext_name'] = $file_item['ext_name'];
+                $result[$file_item['ftype']]['fdesc'] = $file_item['fdesc'];
             }
         }
 
