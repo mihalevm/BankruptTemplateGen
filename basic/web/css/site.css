@@ -151,6 +151,10 @@ a.desc:after {
     display: none;
 }
 
+.result-item-name, .result-item-value {
+    background-color: lightblue;
+}
+
 img {
     white-space: nowrap;
 }
@@ -171,4 +175,9 @@ img {
 
 .saved-session:hover{
     background-color: rgba(62, 147, 220, 0.33);
+}
+
+.doclist-tools {
+    color: #2aabd2;
+    cursor: pointer;
 }

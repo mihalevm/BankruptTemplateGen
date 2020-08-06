@@ -29,7 +29,7 @@ $this->title = \Yii::t('app','Check FSSP');
     <div class="row">
         <div class="col-md-2">Дата рождения</div>
         <div class="col-md-4">
-<?
+<?php
             echo DatePicker::widget([
                 'model' => $model,
                 'attribute' => 'date',

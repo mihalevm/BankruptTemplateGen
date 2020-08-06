@@ -28,7 +28,7 @@ class PcheckController extends Controller {
     public function actionIndex(){
         $model  = new PcheckForm();
         $r = Yii::$app->request;
-        $sid = $_REQUEST['sid'];
+        $sid = $_COOKIE['sid'];
         $params = [
             'pnumber'  => '',
             'pserial' => '',
@@ -61,7 +61,7 @@ class PcheckController extends Controller {
         $res   = null;
         $model = new PcheckForm();
 
-        if (   isset($_REQUEST['sid'])
+        if (   isset($_COOKIE['sid'])
             && null != $r->post('s')
             && null != $r->post('n')
             && null != $r->post('c')
@@ -69,7 +69,7 @@ class PcheckController extends Controller {
             && null != $r->post('jid')
         ){
             $res = $model->PassportValidate(
-                $_REQUEST['sid'],
+                $_COOKIE['sid'],
                 $r->post('s'),
                 $r->post('n'),
                 $r->post('c'),

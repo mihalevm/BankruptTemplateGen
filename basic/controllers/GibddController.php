@@ -10,9 +10,9 @@ namespace app\controllers;
 
 use Yii;
 use yii\web\Controller;
-use app\models\GrabForm;
+use app\models\GibddForm;
 
-class GrabController extends Controller {
+class GibddController extends Controller {
 
     private function _sendJSONAnswer($res){
         $response = Yii::$app->response;
@@ -23,8 +23,8 @@ class GrabController extends Controller {
     }
 
     public function actionIndex(){
-        $model = new GrabForm();
-        $sid = $_COOKIE['sid'];
+        $model = new GibddForm();
+        $sid = isset($_COOKIE['sid']) ? $_COOKIE['sid'] : null;
         $r = Yii::$app->request;
 
         $params = [
@@ -46,11 +46,9 @@ class GrabController extends Controller {
             $user_attr = $model->getSavedData($sid);
 
             if (null !== $user_attr) {
-                $params['summ']       = round(floatval($user_attr[0]), 2);
-                $params['sureName']   = $user_attr[1];
-                $params['firstName']  = $user_attr[2];
-                $params['secondName'] = $user_attr[3];
-                $params['birthDate']  = $user_attr[4];
+                $params['dcard'] = $user_attr['dcard'];
+                $params['rdate'] = $user_attr['rdate'];
+                $params['rdata'] = json_decode($user_attr['rdata']);
                 $model->_addSession($sid);
             } else {
                 if (!$model->getIDbySID($sid)) {
@@ -62,33 +60,18 @@ class GrabController extends Controller {
         return $this->render('index', $params);
     }
 
-    public function actionGetcapcha(){
-        $model = new GrabForm();
-        $res = $model->GetCaptcha();
-
-        return $this->_sendJSONAnswer($res);
-    }
-
-    public function actionSendgrab(){
+    public function actionCheck(){
         $r     = Yii::$app->request;
         $res   = null;
-        $model = new GrabForm();
+        $model = new GibddForm();
 
-        if (   null != $r->post('last_name')
-            && null != $r->post('first_name')
-            && null != $r->post('patronymic')
-            && null != $r->post('date')
-            && null != $r->post('sid')
-            && null != $r->post('code')
+        if (   null != $r->post('dcard')
+            && null != $r->post('rdate')
             && null != $_COOKIE['sid']
         ){
-                        $res = $model->Send_Grab(
-                            $r->post('last_name'),
-                            $r->post('first_name'),
-                            $r->post('patronymic'),
-                            $r->post('date'),
-                            $r->post('sid'),
-                            $r->post('code'),
+                        $res = $model->Check(
+                            $r->post('dcard'),
+                            $r->post('rdate'),
                             $_COOKIE['sid']
                         );
         }

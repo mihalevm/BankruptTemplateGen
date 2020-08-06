@@ -26,7 +26,7 @@ class DocsController extends Controller {
     public function actionIndex(){
         $model = new DocsForm();
         $r = Yii::$app->request;
-        $sid = $_REQUEST['sid'];
+        $sid = $_COOKIE['sid'];
 
         $params = [
             'model'  => $model,
@@ -49,7 +49,7 @@ class DocsController extends Controller {
                 $model->pdfFile = UploadedFile::getInstance($model, 'pdfFile');
                 $p = Yii::$app->request->post('DocsForm');
 
-                if ($model->upload($_REQUEST['sid'],$p['typeFile'], $p['fDesc'])) {
+                if ($model->upload($_COOKIE['sid'],$p['typeFile'], $p['fDesc'])) {
                     $params['upload_result'] = \Yii::t('app','File successfully uploaded');
                 }
             }

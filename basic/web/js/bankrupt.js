@@ -20,7 +20,8 @@ let webtools = function (){
                 "user-init":"grab",
                 "grab":"pcheck",
                 "pcheck":"egrul",
-                "egrul":"docs",
+                "egrul":"gibdd",
+                "gibdd":"docs",
                 "docs":"user-init",
             };
 
@@ -290,6 +291,45 @@ let egrul = function () {
     };
 }();
 
+let gibdd = function () {
+    return {
+        check: function () {
+            $("input[name=dcard]").parent().removeClass("has-error");
+            $("input[name=rdate]").parent().removeClass("has-error");
+
+            if ( $("input[name=dcard]").inputmask('unmaskedvalue') && $("input[name=rdate]").val() ) {
+                $.post(
+                    window.location.origin+window.location.pathname + "/check", {
+                        dcard: $("input[name=dcard]").inputmask('unmaskedvalue'),
+                        rdate: $("input[name=rdate]").val()
+                    },
+                    function (result) {
+                        if (result && result.hasOwnProperty("n")){
+                        }
+                    }
+                ).fail(function (r) {
+                    console.log(r.responseText);
+                });
+            } else {
+                if(!$("input[name=dcard]").inputmask('unmaskedvalue'))
+                    $("input[name=dcard]").parent().addClass("has-error");
+                if (!$("input[name=rdate]").val())
+                    $("input[name=rdate]").parent().addClass("has-error");
+            }
+        }
+    };
+}();
+
+let doclist = function () {
+    return {
+        preview: function (id) {
+            if (id) {
+                window.open(window.location.origin+window.location.pathname + '/getdoc?id=' + id, '_blank');
+            }
+            return;
+        }
+    };
+}();
 
 $(document).ready(function () {
     if (window.location.pathname === '/grab'){
@@ -308,4 +348,9 @@ $(document).ready(function () {
             $("#log_result").fadeIn("slow");
         }
     }
+
+    if (window.location.pathname === '/gibdd'){
+        $("#log_result").fadeIn("slow");
+    }
+
 });

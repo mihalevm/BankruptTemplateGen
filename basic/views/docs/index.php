@@ -16,8 +16,8 @@ $this->title = \Yii::t('app','Upload documents');
     </div>
     <div class="row">
         <div class="col-md-5" style="line-height: 2;">
-            <? if ($upload_result) {echo $upload_result.'<br/>';}?>
-            <? if (array_key_exists('A', $file_exist)) {echo \Yii::t('app','File already uploaded: ').$file_exist['A']['ext_name'].'<br/>';}?>
+            <?php if ($upload_result) {echo $upload_result.'<br/>';}?>
+            <?php if (array_key_exists('A', $file_exist)) {echo \Yii::t('app','File already uploaded: ').$file_exist['A']['ext_name'].'<br/>';}?>
         </div>
     </div>
     <div class="row">

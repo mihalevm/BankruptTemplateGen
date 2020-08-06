@@ -232,20 +232,24 @@ class GrabForm extends ToolsForm {
     public function getSavedData ($sid) {
         $sid = $this->getIDbySID($sid);
 
-        $user_attr = ($this->db_conn->createCommand("select owner from bg_module_fssp where sid=:sid limit 1",[
+        $user_attr = $this->db_conn->createCommand("select owner from bg_module_fssp where sid=:sid limit 1",[
             ':sid' => null,
         ])
             ->bindValue(':sid', $sid)
-            ->queryAll())[0];
+            ->queryAll();
 
-        $user_summ = ($this->db_conn->createCommand("select sum(psumm) as summ from bg_module_fssp where sid=:sid",[
+        $user_attr = sizeof($user_attr) ? $user_attr[0]['owner'] : null;
+
+        $user_summ = $this->db_conn->createCommand("select sum(psumm) as summ from bg_module_fssp where sid=:sid",[
             ':sid' => null,
         ])
             ->bindValue(':sid', $sid)
-            ->queryAll())[0];
+            ->queryAll();
 
-        $user_attr['owner'] = $user_summ['summ'].' '.$user_attr['owner'];
+        $user_summ = sizeof($user_summ) ? $user_summ[0]['summ'] : null;
 
-        return preg_split('/\s/', $user_attr['owner']);
+        $user_attr = $user_attr && $user_summ ? preg_split('/\s/', $user_summ.' '.$user_attr):null;
+
+        return $user_attr;
     }
 }

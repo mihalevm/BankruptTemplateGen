@@ -18,7 +18,7 @@ class PcheckForm extends ToolsForm {
         $this->db_conn = Yii::$app->db;
     }
 
-    private function addPassportValidate ($sid, $serial, $number) {
+    private function addPassportValidate ($sid, $serial, $number, $valid) {
         $sid = $this->getIDbySID($sid);
 
 
@@ -30,15 +30,17 @@ class PcheckForm extends ToolsForm {
             ->execute();
 
 
-        $this->db_conn->createCommand("insert into bg_module_passport_verifed (sid, pserial, pnumber) values (:sid, :pserial, :pnumber)",
+        $this->db_conn->createCommand("insert into bg_module_passport_verifed (sid, pserial, pnumber, validate) values (:sid, :pserial, :pnumber, :validate)",
             [
                 ':sid'     => null,
                 ':pserial' => null,
                 ':pnumber' => null,
+                ':validate' => null,
             ])
-            ->bindValue(':sid',     $sid    )
-            ->bindValue(':pserial', $serial )
-            ->bindValue(':pnumber', $number )
+            ->bindValue(':sid',      $sid    )
+            ->bindValue(':pserial',  $serial )
+            ->bindValue(':pnumber',  $number )
+            ->bindValue(':validate', $valid  )
             ->execute();
 
         return true;
@@ -144,10 +146,15 @@ class PcheckForm extends ToolsForm {
 
             $check_result['data'] = $this->parseContent($check_result['data']);
 
-            if (strlen($check_result['data']) > 0 && strlen(strstr($check_result['data'], "Cреди недействительных не значится")) > 0) {
-                $check_result['validate'] = 1;
+            if (strlen($check_result['data']) > 0) {
                 $check_result['error']  = 200;
-                $this->addPassportValidate($sid, $serial, $number);
+
+                if (strlen(strstr($check_result['data'], "Cреди недействительных не значится")) > 0) {
+                    $check_result['validate'] = 1;
+                    $this->addPassportValidate($sid, $serial, $number, 1);
+                } else {
+                    $this->addPassportValidate($sid, $serial, $number, 0);
+                }
             } elseif (strlen($check_result['data']) == 0) {
                 $check_result['error']  = 400;
             } else {
@@ -163,12 +170,12 @@ class PcheckForm extends ToolsForm {
     public function getSavedData ($sid) {
         $sid = $this->getIDbySID($sid);
 
-        $arr = ($this->db_conn->createCommand("select pserial, pnumber from bg_module_passport_verifed where sid=:sid",[
+        $arr = $this->db_conn->createCommand("select pserial, pnumber from bg_module_passport_verifed where sid=:sid",[
             ':sid' => null,
         ])
             ->bindValue(':sid', $sid)
-            ->queryAll())[0];
+            ->queryAll();
 
-        return $arr;
+        return sizeof($arr) ? $arr[0] : null;
     }
 }

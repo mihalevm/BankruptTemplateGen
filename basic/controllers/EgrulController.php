@@ -25,7 +25,7 @@ class EgrulController extends Controller {
     public function actionIndex(){
         $model  = new EgrulForm();
         $r = Yii::$app->request;
-        $sid = $_REQUEST['sid'];
+        $sid = $_COOKIE['sid'];
         $params = [
             'inn'  => '',
             'name' => '',

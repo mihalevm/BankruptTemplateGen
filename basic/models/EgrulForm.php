@@ -77,7 +77,7 @@ class EgrulForm extends ToolsForm  {
     }
 
     private function addUserData ($inn, $json) {
-        $sid = $this->getIDbySID($_REQUEST['sid']);
+        $sid = $this->getIDbySID($_COOKIE['sid']);
 
         $this->db_conn->createCommand("delete from bg_module_egrul where sid=:sid",
             [
@@ -103,13 +103,13 @@ class EgrulForm extends ToolsForm  {
     public function getSavedData ($sid) {
         $sid = $this->getIDbySID($sid);
 
-        $arr = ($this->db_conn->createCommand("select rdata from bg_module_egrul where sid=:sid",[
+        $arr = $this->db_conn->createCommand("select rdata from bg_module_egrul where sid=:sid",[
             ':sid' => null,
         ])
             ->bindValue(':sid', $sid)
-            ->queryAll())[0];
+            ->queryAll();
 
-        return $arr['rdata'];
+        return sizeof($arr) ? $arr[0]['rdata']:null;
     }
 
     public function EgrulRequest($key){

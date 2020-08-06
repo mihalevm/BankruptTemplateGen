@@ -28,7 +28,7 @@ $config = [
             ],
         ],
         'request' => [
-            'cookieValidationKey' => 'J_xnTHcpxefNySORPDd5l9U6i9XPwvaB',
+//            'cookieValidationKey' => 'J_xnTHcpxefNySORPDd5l9U6i9XPwvaB',
             'enableCookieValidation' => false,
         ],
         'cache' => [
