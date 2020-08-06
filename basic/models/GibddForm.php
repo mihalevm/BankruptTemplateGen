@@ -18,7 +18,7 @@ class GibddForm extends ToolsForm {
     }
 
     private function gibdd_fetch ( $dcard, $rdate ) {
-        $script = '/usr/bin/node /opt/gibdd_fetch/gibdd_dev.js';
+        $script = '/usr/bin/node /opt/gibdd/gibdd_dev.js';
         $ans = null;
 
         if ($dcard && $rdate) {

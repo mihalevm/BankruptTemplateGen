@@ -28,33 +28,16 @@ class GibddController extends Controller {
         $r = Yii::$app->request;
 
         $params = [
-            'firstName'  => '',
-            'sureName'   => '',
-            'secondName' => '',
-            'birthDate'  => '',
-            'summ'       => '',
-            'model'      => $model
+            'model' => $model,
         ];
 
         if (null !== $r->get('sid')) {
             $sid = $r->get('sid');
+            $model->_addSession($sid);
         }
 
-        if ( ! isset( $sid ) ){
+        if ( ! isset( $sid ) && !$model->getIDbySID($sid)){
             Yii::$app->response->redirect('/');
-        } else {
-            $user_attr = $model->getSavedData($sid);
-
-            if (null !== $user_attr) {
-                $params['dcard'] = $user_attr['dcard'];
-                $params['rdate'] = $user_attr['rdate'];
-                $params['rdata'] = json_decode($user_attr['rdata']);
-                $model->_addSession($sid);
-            } else {
-                if (!$model->getIDbySID($sid)) {
-                    Yii::$app->response->redirect('/');
-                }
-            }
         }
 
         return $this->render('index', $params);
@@ -74,6 +57,22 @@ class GibddController extends Controller {
                             $r->post('rdate'),
                             $_COOKIE['sid']
                         );
+        }
+
+        return $this->_sendJSONAnswer($res);
+    }
+
+    public function actionSaved(){
+        $sid = isset($_COOKIE['sid']) ? $_COOKIE['sid'] : null;
+        $res = null;
+
+        $model = new GibddForm();
+
+        if ($sid){
+            $res = $model->getSavedData($sid);
+            if (isset($res['rdata'])){
+                $res = $res['rdata'];
+            }
         }
 
         return $this->_sendJSONAnswer($res);

@@ -10,7 +10,7 @@ $this->title = \Yii::t('app','Check Gibdd');
         <div class="col-md-3"><?=\Yii::t('app','Driver card')?></div>
         <div class="col-md-4">
             <?=MaskedInput::widget([
-                'value'   => $dcard,
+                'value'   => '',
                 'name'    => 'dcard',
                 'mask'    => '9999-999999',
                 'options' => [
@@ -31,7 +31,7 @@ $this->title = \Yii::t('app','Check Gibdd');
                 'options'       => [
                                     'name'        => 'rdate',
                                     'placeholder' => \Yii::t('app','Register date'),
-                                    'value'       => date($rdate ? 'd.m.Y' : '01.m.Y', strtotime($rdate ? $rdate : date('Y-m-d'))),
+                                    'value'       => date( '01.m.Y', strtotime(date('Y-m-d'))),
                 ],
                 'type'          => DatePicker::TYPE_COMPONENT_APPEND,
                 'removeButton'  => false,
@@ -53,15 +53,17 @@ $this->title = \Yii::t('app','Check Gibdd');
             <button type="button" name="next" class="btn btn-primary pull-right" onclick="webtools.nextStep('gibdd')"><?=\Yii::t('app','Next')?></button>
         </div>
     </div>
+    <div class="row" id="progress">
+        <div class="col-md-2"></div>
+        <div class="col-md-2"><img src="img/progress.gif" width="150px"/></div>
+        <div class="col-md-3"></div>
+    </div>
     <br/>
-    <?php
-    if ( property_exists($rdata, 'doc') ) {
-        echo '<div class="row"><div class="col-md-3 text-right result-item-name">'.\Yii::t('app','Category').':</div><div class="col-md-4 result-item-value">'.$rdata->doc->cat.'</div></div>';
-        echo '<div class="row"><div class="col-md-3 text-right result-item-name">'.\Yii::t('app','Birthday').':</div><div class="col-md-4 result-item-value">'.$rdata->doc->bdate.'</div></div>';
-        echo '<div class="row"><div class="col-md-3 text-right result-item-name">'.\Yii::t('app','Change date').':</div><div class="col-md-4 result-item-value">'.$rdata->doc->srok.'</div></div>';
-        if (strlen($rdata->doc->wanted)) {
-            echo '<div class="row"><div class="col-md-3 text-right result-item-name">' . \Yii::t('app', 'Disabled date') . ':</div><div class="col-md-4 result-item-value">' . $rdata->doc->wanted . '</div></div>';
-        }
-    }
-    ?>
+    <div class="row" id="sn"><div class="col-md-3 text-right result-item-name"><?=\Yii::t('app','Serial-Number')?>:</div><div class="col-md-4 result-item-value"></div></div>
+    <div class="row" id="rdate"><div class="col-md-3 text-right result-item-name"><?=\Yii::t('app','Register date')?>:</div><div class="col-md-4 result-item-value"></div></div>
+    <div class="row" id="cat"><div class="col-md-3 text-right result-item-name"><?=\Yii::t('app','Category')?>:</div><div class="col-md-4 result-item-value"></div></div>
+    <div class="row" id="bdate"><div class="col-md-3 text-right result-item-name"><?=\Yii::t('app','Birthday')?>:</div><div class="col-md-4 result-item-value"></div></div>
+    <div class="row" id="cdate"><div class="col-md-3 text-right result-item-name"><?=\Yii::t('app','Change date')?>:</div><div class="col-md-4 result-item-value"></div></div>
+    <div class="row" id="ddate"><div class="col-md-3 text-right result-item-name"><?=\Yii::t('app', 'Disabled date')?>:</div><div class="col-md-4 result-item-value"></div></div>
+    <div class="row" id="status"><div class="col-md-3 text-right result-item-name"><?=\Yii::t('app', 'Request status')?>:</div><div class="col-md-4 result-item-value"></div></div>
 </div>

@@ -298,17 +298,19 @@ let gibdd = function () {
             $("input[name=rdate]").parent().removeClass("has-error");
 
             if ( $("input[name=dcard]").inputmask('unmaskedvalue') && $("input[name=rdate]").val() ) {
+                $('.result-item-name, .result-item-value').fadeOut(function () {
+                    $('#progress').fadeIn();
+                });
                 $.post(
                     window.location.origin+window.location.pathname + "/check", {
                         dcard: $("input[name=dcard]").inputmask('unmaskedvalue'),
                         rdate: $("input[name=rdate]").val()
                     },
                     function (result) {
-                        if (result && result.hasOwnProperty("n")){
-                        }
+                        gibdd.printData(JSON.parse(result));
                     }
                 ).fail(function (r) {
-                    console.log(r.responseText);
+                    gibdd.printData(JSON.parse(r));
                 });
             } else {
                 if(!$("input[name=dcard]").inputmask('unmaskedvalue'))
@@ -316,6 +318,46 @@ let gibdd = function () {
                 if (!$("input[name=rdate]").val())
                     $("input[name=rdate]").parent().addClass("has-error");
             }
+        },
+        getSaved: function () {
+            $('.result-item-name, .result-item-value').fadeOut(function () {
+                $('#progress').fadeIn();
+            });
+
+            $.post(
+                window.location.origin+window.location.pathname + "/saved", {},
+                function (result) {
+                    gibdd.printData(JSON.parse(result));
+                }
+            ).fail(function (r) {
+                console.log(r.responseText);
+            });
+        },
+        printData: function (o) {
+            if(o.hasOwnProperty('doc')){
+                $("input[name=dcard]").val(o.doc.num);
+                $("input[name=rdate]").val(o.doc.date.replace(/(\d+)-(\d+)-(\d+)/, '$3.$2.$1'));
+
+                $("#sn").find('div:last-child').text(o.doc.num);
+                $("#rdate").find('div:last-child').text(o.doc.date);
+                $("#cat").find('div:last-child').text(o.doc.cat);
+                $("#bdate").find('div:last-child').text(o.doc.bdate);
+                $("#cdate").find('div:last-child').text(o.doc.srok);
+                $("#ddate").find('div:last-child').text(o.doc.wanted?o.doc.wanted:'-');
+            } else {
+                $("#sn").find('div:last-child').text('-');
+                $("#rdate").find('div:last-child').text('-');
+                $("#cat").find('div:last-child').text('-');
+                $("#bdate").find('div:last-child').text('-');
+                $("#cdate").find('div:last-child').text('-');
+                $("#ddate").find('div:last-child').text('-');
+            }
+
+            $("#status").find('div:last-child').text(o.hasOwnProperty('message')?o.message:'Данные не получены');
+
+            $('#progress').fadeOut(function () {
+                $('.result-item-name, .result-item-value').fadeIn();
+            });
         }
     };
 }();
@@ -351,6 +393,7 @@ $(document).ready(function () {
 
     if (window.location.pathname === '/gibdd'){
         $("#log_result").fadeIn("slow");
+        gibdd.getSaved();
     }
 
 });

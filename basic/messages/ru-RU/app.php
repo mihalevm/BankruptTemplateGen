@@ -62,5 +62,5 @@ return [
     'Data creation' => 'Дата создания',
     'User email' => 'Адрес эл. почты',
     'Action' => 'Действие',
-    '' => '',
+    'Request status' => 'Статус запроса',
 ];

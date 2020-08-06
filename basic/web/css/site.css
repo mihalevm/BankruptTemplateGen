@@ -153,6 +153,7 @@ a.desc:after {
 
 .result-item-name, .result-item-value {
     background-color: lightblue;
+    display: none;
 }
 
 img {
@@ -180,4 +181,8 @@ img {
 .doclist-tools {
     color: #2aabd2;
     cursor: pointer;
+}
+
+#progress {
+    display: none;
 }
