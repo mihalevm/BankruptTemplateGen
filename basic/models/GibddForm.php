@@ -36,7 +36,7 @@ class GibddForm extends ToolsForm {
 
         $janswer = json_decode($answer);
 
-        if(property_exists($janswer, 'code') && intval($janswer->code) == 100) {
+        if(null !== $janswer && property_exists($janswer, 'code') && intval($janswer->code) == 100) {
             $this->db_conn->createCommand("insert into bg_module_gibdd (sid, dcard, rdate, rdata) values (:sid, :dcard, :rdate, :rdata) on duplicate key update sid=:sid, dcard=:dcard, rdate=:rdate, rdata=:rdata",
                 [
                     ':sid'   => null,

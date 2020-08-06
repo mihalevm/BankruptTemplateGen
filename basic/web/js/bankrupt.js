@@ -334,7 +334,7 @@ let gibdd = function () {
             });
         },
         printData: function (o) {
-            if(o.hasOwnProperty('doc')){
+            if(null !== o && o.hasOwnProperty('doc')){
                 $("input[name=dcard]").val(o.doc.num);
                 $("input[name=rdate]").val(o.doc.date.replace(/(\d+)-(\d+)-(\d+)/, '$3.$2.$1'));
 
@@ -353,7 +353,7 @@ let gibdd = function () {
                 $("#ddate").find('div:last-child').text('-');
             }
 
-            $("#status").find('div:last-child').text(o.hasOwnProperty('message')?o.message:'Данные не получены');
+            $("#status").find('div:last-child').text(null!== o && o.hasOwnProperty('message') ? o.message : 'Данные не получены');
 
             $('#progress').fadeOut(function () {
                 $('.result-item-name, .result-item-value').fadeIn();
